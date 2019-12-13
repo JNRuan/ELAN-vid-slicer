@@ -14,3 +14,7 @@ For now this is a command line tool, a full gui is a stretch goal.
 ## Usage
 
 Coming soon...
+
+## Future
+
+GUI for better user experience...
