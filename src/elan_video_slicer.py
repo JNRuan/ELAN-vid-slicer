@@ -8,6 +8,7 @@
 # Author: Jameson Nguyen (JNRuan), University of Queensland
 ##############################################################################
 # Libary Imports
+from datetime import timedelta
 import argparse
 import os
 import subprocess
@@ -48,7 +49,7 @@ def main():
     # Optional Args
     parser.add_argument('-o', '--output_dir',
                         type=str,
-                        default='../output',
+                        default='./output',
                         help='''Output directory for parsed annotations with
                                 video frames. Each annotation will contain its own folder.''')
     parser.add_argument('-f', '--fps',
@@ -74,14 +75,38 @@ def main():
         os.makedirs(args.output_dir)
 
     # Run App
-    elan_video_slicer = ElanVideoSlicer(args)
-    if elan_video_slicer.elan_video.eaf:
+    elan_vid_slicer = ElanVideoSlicer(args)
+    if elan_vid_slicer.elan_video.eaf:
         # TESTING
-        annotations = elan_video_slicer.get_annotations()
+        annotations = elan_vid_slicer.get_annotations()
         print(annotations)
+
+        # TIME TESTER
+        start, end, annotation = annotations[0]
+        start = str(timedelta(milliseconds=start))
+        end = str(timedelta(milliseconds=end))
+        print(f"{start} - {end}: {annotation}")
+
+        fname = elan_vid_slicer.elan_video._elan_fname
+        fname = os.path.splitext(fname)[0]
+        vid_name = os.path.join(args.input_dir, f'{fname}.mp4')
+        print(vid_name)
+        fps = args.fps
+        out = os.path.join(args.output_dir, annotation, f'{fname}_{annotation}_{fps}fps_%04d.jpg')
+
+        subprocess.call(['ffmpeg',
+                        '-i', vid_name,
+                        '-ss', start,
+                        '-to', end,
+                        '-vf',
+                        f'fps={fps}',
+                        f'{fname}_{fps}fps_%04d.jpg'
+                        ], shell=True)
+
         print("EAF LOADED.")
     else:
-        print("EAF LOAD FAILED.")
+        print("Failed to load or find an ELAN file and video to use. Please check directory and usage.")
+        print("Run script with optional argument -h for help: e.g. python3 elan_video_slicer.py -h")
 
 
 if __name__ == '__main__':
