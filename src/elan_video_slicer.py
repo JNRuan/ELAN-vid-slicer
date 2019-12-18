@@ -44,6 +44,9 @@ def main():
                         type=int,
                         default=10,
                         help='Frames per second (fps) to slice videos. Input a number (integer).')
+    parser.add_argument('-e', '--elan_file',
+                        type=str,
+                        help='Elan file name. Specify if is more than one elan file in the input directory.')                    
     parser.add_argument('-t', '--tier_name',
                         type=str,
                         help='Tier to extract annotations. Input should be a tier name (string).')
