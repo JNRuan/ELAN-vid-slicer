@@ -19,8 +19,20 @@ from elan_video import ElanVideo
 class ElanVideoSlicer:
     """Slices videos into frames based on annotations from ELAN files."""
     def __init__(self, args):
-        self.elan_video = ElanVideo(args.input_dir, args.elan_file, args.tier_name, args.tier_index)
+        self.elan_video = ElanVideo(args.input_dir, args.elan_file)
+        self.tier_name = args.tier_name
+        self.tier_index = args.tier_index
+        self.output_dir = args.output_dir
+        self.fps = args.fps
 
+    def get_annotations(self):
+        if self.tier_name:
+            print(f"Annotations retrieved from tier name {self.tier_name}")
+            return self.elan_video.get_annotations_from_tier(self.tier_name)
+        else:
+            print(f"Annotations retrieved from tier index {self.tier_index}")
+            tier_name = self.elan_video.get_tier_by_index(self.tier_index - 1)
+            return self.elan_video.get_annotations_from_tier(tier_name)
 
 def main():
     # Setup Parser
@@ -64,9 +76,9 @@ def main():
     # Run App
     elan_video_slicer = ElanVideoSlicer(args)
     if elan_video_slicer.elan_video.eaf:
-        print(type(elan_video_slicer.elan_video.eaf))
-        print(elan_video_slicer.elan_video.eaf.get_tier_names())
-        print(elan_video_slicer.elan_video.eaf.get_annotation_data_for_tier('RH-IDgloss'))
+        # TESTING
+        annotations = elan_video_slicer.get_annotations()
+        print(annotations)
         print("EAF LOADED.")
     else:
         print("EAF LOAD FAILED.")
