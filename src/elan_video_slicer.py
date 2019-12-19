@@ -28,12 +28,18 @@ class ElanVideoSlicer:
 
     def get_annotations(self):
         if self.tier_name:
-            print(f"Annotations retrieved from tier name {self.tier_name}")
+            print(f"Retrieving annotations from tier name {self.tier_name}")
             return self.elan_video.get_annotations_from_tier(self.tier_name)
         else:
-            print(f"Annotations retrieved from tier index {self.tier_index}")
+            print(f"Retrieving annotations from tier index {self.tier_index}")
             tier_name = self.elan_video.get_tier_by_index(self.tier_index - 1)
             return self.elan_video.get_annotations_from_tier(tier_name)
+
+    def run(self):
+        """Runs Elan Video Slicer: Calls ffmpeg on the cmd line so user will
+        need to have ffmpeg installed.
+        """
+
 
 def main():
     # Setup Parser
@@ -78,30 +84,30 @@ def main():
     elan_vid_slicer = ElanVideoSlicer(args)
     if elan_vid_slicer.elan_video.eaf:
         # TESTING
-        annotations = elan_vid_slicer.get_annotations()
-        print(annotations)
-
-        # TIME TESTER
-        start, end, annotation = annotations[0]
-        start = str(timedelta(milliseconds=start))
-        end = str(timedelta(milliseconds=end))
-        print(f"{start} - {end}: {annotation}")
-
-        fname = elan_vid_slicer.elan_video._elan_fname
-        fname = os.path.splitext(fname)[0]
-        vid_name = os.path.join(args.input_dir, f'{fname}.mp4')
-        print(vid_name)
-        fps = args.fps
-        out = os.path.join(args.output_dir, annotation, f'{fname}_{annotation}_{fps}fps_%04d.jpg')
-
-        subprocess.call(['ffmpeg',
-                        '-i', vid_name,
-                        '-ss', start,
-                        '-to', end,
-                        '-vf',
-                        f'fps={fps}',
-                        f'{fname}_{fps}fps_%04d.jpg'
-                        ], shell=True)
+        # annotations = elan_vid_slicer.get_annotations()
+        # print(annotations)
+        #
+        # # TIME TESTER
+        # start, end, annotation = annotations[0]
+        # start = str(timedelta(milliseconds=start))
+        # end = str(timedelta(milliseconds=end))
+        # print(f"{start} - {end}: {annotation}")
+        #
+        # fname = elan_vid_slicer.elan_video._elan_fname
+        # fname = os.path.splitext(fname)[0]
+        # vid_name = os.path.join(args.input_dir, f'{fname}.mp4')
+        # print(vid_name)
+        # fps = args.fps
+        # out = os.path.join(args.output_dir, annotation, f'{fname}_{annotation}_{fps}fps_%04d.jpg')
+        #
+        # subprocess.call(['ffmpeg',
+        #                 '-i', vid_name,
+        #                 '-ss', start,
+        #                 '-to', end,
+        #                 '-vf',
+        #                 f'fps={fps}',
+        #                 f'{fname}_{fps}fps_%04d.jpg'
+        #                 ], shell=True)
 
         print("EAF LOADED.")
     else:

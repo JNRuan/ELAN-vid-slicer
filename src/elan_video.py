@@ -19,21 +19,23 @@ class ElanVideo:
     Data is extracted from ELAN (.eaf) files and their associated video file.
     """
     def __init__(self, input_dir: str, elan_fname: str=None, tier_name: str=None, tier_index: int=1):
-        self._eaf, self._elan_fname = self._load_elan(input_dir, elan_fname)
+        self._eaf = None
+        self._path = None
+        self._elan_fname = None
+        self._name = None
+        self._load_elan(input_dir, elan_fname)
 
     @property
     def eaf(self):
         return self._eaf
 
     def _load_elan(self, input_dir: str, elan_fname: str=None):
-        eaf = None
-
         # Elan file provided, load directly.
         if elan_fname:
             if elan_fname.endswith('.eaf'):
-                fpath = os.path.join(input_dir, elan_fname)
+                self._path = os.path.join(input_dir, elan_fname)
             else:
-                fpath = os.path.join(input_dir, f'{elan_fname}.eaf')
+                self._path = os.path.join(input_dir, f'{elan_fname}.eaf')
         else:
             # No Elan file, load indirectly - inform user if not found or there is more than one.
             elan_file_list = [file for file in os.listdir(input_dir) if file.endswith('.eaf')]
@@ -44,19 +46,20 @@ class ElanVideo:
                         " by default using the first file in folder."
                         " Please specify the file you want to use with the optional",
                         " argument -e or --elan_file on script execution")
-                fpath = os.path.join(input_dir, elan_file_list[0])
+                self._path = os.path.join(input_dir, elan_file_list[0])
             else:
-                fpath = os.path.join(input_dir, elan_file_list[0])
+                self._path = os.path.join(input_dir, elan_file_list[0])
 
         try:
-            eaf = Elan.Eaf(fpath)
+            self._eaf = Elan.Eaf(self._path)
         except Exception as e:
-            print(f"Error on attempting to load Elan file from {input_dir}/{fpath}")
+            print(f"Error on attempting to load Elan file from {self._path}")
             print(e)
 
-        if eaf:
-            print(f"Loaded elan file: {fpath}")
-        return eaf, os.path.basename(fpath)
+        if self._eaf:
+            self._elan_fname = os.path.basename(self._path)
+            self._name = os.path.splitext(self._elan_fname)[0]
+            print(f"Loaded elan file: {self._elan_fname}")
 
     def get_tier_names(self):
         """Retrieves a list of all available tier names in tier index order.
@@ -85,4 +88,8 @@ class ElanVideo:
         :param str tier: The tier name to retrieve from.
         :returns: List of annotations at tier.
         """
-        return self._eaf.get_annotation_data_for_tier(tier)
+        try:
+            annotations = self._eaf.get_annotation_data_for_tier(tier)
+        except KeyError as e:
+            print(f"Tier: {tier} not found, please check tier name or use tier index.")
+        return annotations
