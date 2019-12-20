@@ -4,12 +4,13 @@
 #
 # Main driver file for ELAN Video Slicer utility. Requires ffmpeg.
 #
-# Version: 0.1
+# Version: 0.2
 # Author: Jameson Nguyen (JNRuan), University of Queensland
 ##############################################################################
 # Libary Imports
 from datetime import timedelta
 from typing import List, Tuple
+from tqdm import tqdm
 import argparse
 import os
 import re
@@ -19,10 +20,14 @@ import subprocess
 from elan_video import ElanVideo
 
 ##############################################################################
+_VERSION = '0.2'
+_PROMPT_DIVIDER = '=' * 80
+
 class ElanVideoSlicer:
     """Slices videos into frames based on annotations from ELAN files."""
-    def __init__(self, args):
-        self.elan_video = ElanVideo(args.input_dir, args.elan_file)
+    def __init__(self, args, elan_folder: str):
+        self.elan_video = ElanVideo(elan_folder, args.elan_file)
+        self.vid_ext = args.video_type
         self.tier_name = args.tier_name
         self.tier_index = args.tier_index
         self.fps = args.fps
@@ -43,6 +48,7 @@ class ElanVideoSlicer:
         else:
             print(f"Retrieving annotations from tier index {self.tier_index}")
             tier_name = self.elan_video.get_tier_by_index(self.tier_index - 1)
+            print(f"Tier name: {tier_name}")
             return self.elan_video.get_annotations_from_tier(tier_name)
 
     def run(self):
@@ -50,7 +56,13 @@ class ElanVideoSlicer:
         need to have ffmpeg installed.
         """
         annotations = self.get_annotations()
-        for start_time, end_time, annotation in annotations:
+        if len(annotations) == 0:
+            print(f"Could not retrieve annotations, please check parameters.")
+            return
+        print(f"Found: {len(annotations)} annotations.")
+        print("Slicing by annotations, please wait...")
+        for i in tqdm(range(len(annotations))):
+            start_time, end_time, annotation = annotations[i]
             t_start = str(timedelta(milliseconds=start_time))
             t_end = str(timedelta(milliseconds=end_time))
             label = annotation.lower()
@@ -63,18 +75,19 @@ class ElanVideoSlicer:
                                          t_start, t_end,
                                          self.elan_video.name,
                                          label,
-                                         self.fps)
+                                         self.fps,
+                                         self.vid_ext)
 
     def _subprocess_call_ffmpeg(self, inpath: str, outpath: str,
                                 start_time, end_time,
                                 id: str, annotation: str,
-                                fps: int):
+                                fps: int, vid_ext: str):
         """Calls ffmpeg subroutine.
 
         Example:
             ffmpeg -i id.mp4 -ss hh:mm:ss.ms -to hh:mm:ss.ms -vf fps=10 outpath/annotation/id_annotation_10fps_%04d.jpg
         """
-        vid_path = os.path.join(inpath, f"{id}.mp4")
+        vid_path = os.path.join(inpath, f"{id}.{vid_ext}")
         frame_name = f"{id}_{annotation}_{fps}fps_%04d.jpg"
         frame_path = os.path.join(outpath, frame_name)
         subprocess.call([
@@ -83,8 +96,30 @@ class ElanVideoSlicer:
             '-ss', start_time,
             '-to', end_time,
             '-vf', f'fps={fps}',
+            '-loglevel', '0',
             frame_path
         ], shell=True)
+
+
+def run_multi_slice(args):
+    print(f"Compiling your ELAN Folders from: {args.input_dir}")
+    folder_list = [folder[0] for folder in os.walk(args.input_dir)]
+    print(f"Found {len(folder_list)} folders.")
+    print(_PROMPT_DIVIDER)
+    for elan_folder in folder_list[1:]:
+        run_single_slice(args, elan_folder)
+
+
+def run_single_slice(args, elan_folder: str):
+    # Run App
+    print(f"Slicing from {elan_folder}")
+    elan_vid_slicer = ElanVideoSlicer(args, elan_folder)
+    if elan_vid_slicer.elan_video.eaf:
+        elan_vid_slicer.run()
+        print(_PROMPT_DIVIDER)
+    else:
+        print(f"Failed to load or find an ELAN file and video to use. Please check {elan_folder}")
+        print("Run script with optional argument -h for help: e.g. python3 elan_video_slicer.py -h")
 
 def main():
     # Setup Parser
@@ -96,7 +131,7 @@ def main():
     parser.add_argument('input_dir',
                         type=str,
                         help='''Input directory containing ELAN (.eaf) and
-                                coresponding video file.''')
+                                coresponding video file. If mutiple folders use arg --multi 1''')
     # Optional Args
     parser.add_argument('-o', '--output_dir',
                         type=str,
@@ -110,6 +145,10 @@ def main():
     parser.add_argument('-e', '--elan_file',
                         type=str,
                         help='Elan file name. Specify if is more than one elan file in the input directory.')
+    parser.add_argument('-vt', '--video_type',
+                        type=str,
+                        default='mp4',
+                        help="Specify the video file extension, eg., 'mp4', 'mov'.")
     parser.add_argument('-t', '--tier_name',
                         type=str,
                         help='Tier to extract annotations. Input should be a tier name (string).')
@@ -118,17 +157,32 @@ def main():
                         default=1,
                         help='''Tier index to extract annotations from.
                                 Input should be a number (integer). Top tier index = 1.''')
+    parser.add_argument('-m', '--multi',
+                        type=int,
+                        default=0,
+                        help='''If --multi 1, runs in multi folder mode and
+                                attempts to slice all folders inside provided
+                                input_dir. If --multi 0, then will use
+                                input dir to find Elan (.eaf) and video.''')
 
     args = parser.parse_args()
 
-    # Run App
-    elan_vid_slicer = ElanVideoSlicer(args)
-    if elan_vid_slicer.elan_video.eaf:
-        elan_vid_slicer.run()
-    else:
-        print("Failed to load or find an ELAN file and video to use. Please check directory and usage.")
-        print("Run script with optional argument -h for help: e.g. python3 elan_video_slicer.py -h")
+    print(f"Welcome to ELAN Vid Slicer v{_VERSION}")
+    print(_PROMPT_DIVIDER)
+    print("Parameters:")
+    print(f"Input Dir: {args.input_dir}")
+    print(f"Output Dir: {args.output_dir}")
+    print(f"Elan File (Optional): {args.elan_file} | Tier Index: {args.tier_index} | Tier Name (Optional): {args.tier_name}")
+    print(f"Video Type/Ext: {args.video_type}")
+    print(f"Mode: FPS = {args.fps} | Multi = {args.multi}")
+    print(_PROMPT_DIVIDER)
 
+    if args.multi == 0:
+        run_single_slice(args, args.input_dir)
+    else:
+        run_multi_slice(args)
+
+    print("Shutting down Elan Vid Slicer...")
 
 if __name__ == '__main__':
     main()

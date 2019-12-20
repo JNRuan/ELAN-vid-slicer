@@ -4,7 +4,7 @@
 #
 # Makes extensive use of the Elan data structure provided by pympi library.
 #
-# Version: 0.1
+# Version: 0.2
 # Author: Jameson Nguyen (JNRuan), University of Queensland
 ##############################################################################
 from pympi import Elan
@@ -54,6 +54,7 @@ class ElanVideo:
         else:
             # No Elan file, load indirectly - inform user if not found or there is more than one.
             elan_file_list = [file for file in os.listdir(input_dir) if file.endswith('.eaf')]
+            elan_file_list.sort(reverse=True)
             if len(elan_file_list) == 0:
                 print(f"No Elan (.eaf) files found in {input_dir}.")
             elif len(elan_file_list) > 1:
@@ -103,6 +104,7 @@ class ElanVideo:
         :param str tier: The tier name to retrieve from.
         :returns: List of annotations at tier.
         """
+        annotations = []
         try:
             annotations = self._eaf.get_annotation_data_for_tier(tier)
         except KeyError as e:
