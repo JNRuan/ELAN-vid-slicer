@@ -15,6 +15,10 @@ For now this is a command line tool, a full gui is a stretch goal.
 * pympi ([Repo](https://github.com/dopefishh/pympi))
 * tqdm ([Repo](https://github.com/tqdm/tqdm))
 
+For ffmpeg, follow install instructions and ensure environment/path is set.
+
+For pympi and tqdm, use `pip install library_name` in terminal/cmd.
+
 ### Folder Structure
 
 ```
