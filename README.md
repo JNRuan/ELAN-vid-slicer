@@ -17,6 +17,7 @@ For now this is a command line tool, a full gui is a stretch goal.
 
 ### Folder Structure
 
+```
 Root_Input_Folder/
 -- Folder1/
 ---- elan_file.eaf
@@ -24,6 +25,7 @@ Root_Input_Folder/
 -- Folder2/
 ---- elan_file.eaf
 ---- elan_file.mp4
+```
 
 ## Usage
 
