@@ -1,6 +1,7 @@
 # ELAN Vid Slicer
 
 **Author**: James Nguyen, University of Queensland
+
 **Version**: 0.2
 
 The ELAN Vid Slicer is a tool created to perform a data pre-processing task involving annotated Elan (.eaf) files and video recordings of Auslan signers. This tool allows you to extract frames from a recording based on important annotations detected at a transcription tier within Elan (.eaf) files.
@@ -19,7 +20,13 @@ For ffmpeg, follow install instructions and ensure environment/path is set.
 
 For pympi and tqdm, use `pip install library_name` in terminal/cmd.
 
-### Folder Structure
+## Installation
+
+Clone this repository with `git clone https://github.com/JNRuan/ELAN-vid-slicer.git` or download and extract from [Releases](https://github.com/JNRuan/ELAN-vid-slicer/releases).
+
+## Folder Structure
+
+Expected folder structure. Ensure that the video file and elan file (.eaf) have the same filename. Ideally there should only be one .eaf file per folder.
 
 ```
 Root_Input_Folder/
