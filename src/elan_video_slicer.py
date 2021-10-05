@@ -88,7 +88,8 @@ class ElanVideoSlicer:
             ffmpeg -i id.mp4 -ss hh:mm:ss.ms -to hh:mm:ss.ms -vf fps=10 outpath/annotation/id_annotation_10fps_%04d.jpg
         """
         vid_path = os.path.join(inpath, f"{id}.{vid_ext}")
-        frame_name = f"{id}_{annotation}_{fps}fps_%04d.jpg"
+        # frame_name = f"{id}_{annotation}_{fps}fps_%04d.jpg"
+        frame_name = f"{id}_%04d.jpg"
         frame_path = os.path.join(outpath, frame_name)
         subprocess.call([
             'ffmpeg',
@@ -96,6 +97,7 @@ class ElanVideoSlicer:
             '-ss', start_time,
             '-to', end_time,
             '-vf', f'fps={fps}',
+            '-qscale:v', '2',
             '-loglevel', '0',
             frame_path
         ], shell=True)
