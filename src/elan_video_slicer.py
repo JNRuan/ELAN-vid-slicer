@@ -89,7 +89,7 @@ class ElanVideoSlicer:
         """
         vid_path = os.path.join(inpath, f"{id}.{vid_ext}")
         # frame_name = f"{id}_{annotation}_{fps}fps_%04d.jpg"
-        frame_name = f"{id}_%04d.jpg"
+        frame_name = f"{id}_{annotation}_%04d.jpg"
         frame_path = os.path.join(outpath, frame_name)
         subprocess.call([
             'ffmpeg',
