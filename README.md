@@ -4,11 +4,9 @@
 
 **Version**: 0.2
 
-The ELAN Vid Slicer is a tool created to perform a data pre-processing task involving annotated Elan (.eaf) files and video recordings of Auslan signers. This tool allows you to extract frames from a recording based on important annotations detected at a transcription tier within Elan (.eaf) files.
+The ELAN Vid Slicer is a tool created to perform a data pre-processing task involving annotated Elan (.eaf) files and video recordings of Auslan signers. This tool allows you to extract frames from a recording based on important annotations detected at a transcription tier within Elan (.eaf) files. It was created to extract annotated sequences of frames from Auslan signing videos that are part of the ELAR Auslan dataset [1].
 
 If you have mutiple elan files for different videos, use mode --multi 1 when running script. See usage and folder structure for details.
-
-For now this is a command line tool, a full gui is a stretch goal.
 
 ## Dependencies
 
@@ -18,7 +16,7 @@ For now this is a command line tool, a full gui is a stretch goal.
 
 For ffmpeg, follow install instructions and ensure environment/path is set.
 
-For pympi and tqdm, use `pip install library_name` in terminal/cmd.
+For pympi and tqdm, use `pip install library_name` in terminal/cmd, see repo links for instructions/package names.
 
 ## Installation
 
@@ -48,6 +46,14 @@ For help: `python elan_video_slicer.py -h`
 
 To run: `python elan_video_slicer path/to/folder/elan_file.eaf [optional args]`
 
+Example: 
+```
+# Save annotated sequences to output_folder
+# Use tier name 'RH-IDgloss'
+# Run video slice on all folders with .eaf files (see folder structure)
+python elan_video_slicer "path/to/Root_Input_Folder" -o "path/to/output_folder" -t "RH-IDgloss" -m 1
+```
+
 Optional args:
 
 `[-o | --output_dir] : Specify path output should be saved in. Default = "../output"`
@@ -70,3 +76,7 @@ Optional args:
 GUI for better user experience...
 
 If you encounter any bugs or issues, please make a ticket under issues.
+
+## References
+[1] T. Johnston, “From archive to corpus: Transcription and annotation in the creation of signed language corpora,” IJCL, vol. 15, no. 1, pp. 106–131, Apr. 2010, doi: 10.1075/ijcl.15.1.05joh.
+
