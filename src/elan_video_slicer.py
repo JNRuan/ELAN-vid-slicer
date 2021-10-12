@@ -15,6 +15,7 @@ import argparse
 import os
 import re
 import subprocess
+import uuid
 
 # Module Imports
 from elan_video import ElanVideo
@@ -87,9 +88,10 @@ class ElanVideoSlicer:
         Example:
             ffmpeg -i id.mp4 -ss hh:mm:ss.ms -to hh:mm:ss.ms -vf fps=10 outpath/annotation/id_annotation_10fps_%04d.jpg
         """
+        sample_id = str(uuid.uuid4())[:8]
         vid_path = os.path.join(inpath, f"{id}.{vid_ext}")
         # frame_name = f"{id}_{annotation}_{fps}fps_%04d.jpg"
-        frame_name = f"{id}_{annotation}_%04d.jpg"
+        frame_name = f"{id}_{annotation}_{sample_id}_%04d.jpg"
         frame_path = os.path.join(outpath, frame_name)
         subprocess.call([
             'ffmpeg',
